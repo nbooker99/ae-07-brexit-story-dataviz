@@ -1,12 +1,13 @@
 ---
 title: "Brexit"
-author: "You!"
+author: "Noah"
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
 ```{r load-packages, message = FALSE, echo = FALSE}
 library(tidyverse)
+library(scales)
 ```
 
 In September 2019, YouGov survey asked 1,639 GB adults the following question:
@@ -60,12 +61,14 @@ How does the visualisation change?
 
 How is the story this visualisation telling different than the story the original plot tells?
 
+It changes the scales of the x axes for each plot, making the largest bar (wrong) appear to be the same size in each plot. Unless you refer to the scales of the x-axes, you would not as easily see the different sample sizes from each region. But you can perhaps more easily compare the differences in proportion of opinions (e.g., how close to 50/50 were right vs wrong opinions) across the regions. 
+
 ```{r}
 ggplot(brexit, aes(y = opinion, fill = opinion)) +
   geom_bar() +
   facet_wrap(~region,
     nrow = 1, labeller = label_wrap_gen(width = 12),
-    # ___
+    scales = "free_x"
   ) +
   guides(fill = FALSE) +
   labs(
@@ -89,7 +92,16 @@ How is the story this visualisation telling different than the story the origina
 **Hint:** You'll need the **scales** package to improve axis labeling, which means you'll need to load it on top of the document as well.
 
 ```{r}
-# code goes here
+#creating a dataframe which shows the counts of unique combinations of region and opinion
+brexit_opinions_by_region <- brexit %>%
+  count(region, opinion)
+#creating a dataframe which shows the total observations per region
+brexit_regions_total <- brexit %>% 
+  count(region) %>% 
+  rename(total = n)
+#creating a dataframe which shows the proportion of each opinion per region
+#brexit_proportions_by_region <- brexit_opinions_by_region %>% 
+  
 ```
 
 ### Exercise 3 - Comparing proportions across bars
