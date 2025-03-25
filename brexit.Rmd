@@ -93,22 +93,96 @@ How is the story this visualisation telling different than the story the origina
 
 ```{r}
 #creating a dataframe which shows the counts of unique combinations of region and opinion
-brexit_opinions_by_region <- brexit %>%
+opinions_by_region <- brexit %>%
   count(region, opinion)
 #creating a dataframe which shows the total observations per region
-brexit_regions_total <- brexit %>% 
+regions_total <- brexit %>% 
   count(region) %>% 
   rename(total = n)
 #creating a dataframe which shows the proportion of each opinion per region
-#brexit_proportions_by_region <- brexit_opinions_by_region %>% 
-  
+brexit_proportions <- opinions_by_region %>% 
+  left_join(regions_total, by = "region") %>% 
+  mutate(proportion = n/total)
+#plotting proportions
+#must use geom_col( ) instead of geom_bar( ) so we can plot proportions instead of counts.
+ggplot(brexit_proportions, aes(x = proportion, y = opinion)) +
+  geom_col() +
+  facet_wrap(~region)
+#applying a fill to the bars based on value of opinion.
+ggplot(brexit_proportions, aes(x = proportion, y = opinion, fill = opinion)) +
+  geom_col() +
+  facet_wrap(~region)
+#making the faceted plot have only 1 row.
+ggplot(brexit_proportions, aes(x = proportion, y = opinion, fill = opinion)) +
+  geom_col() +
+  facet_wrap(~region, nrow = 1)
+#making the text of the facet labels (region names) wrap (go to a new line) after 12 characters.
+ggplot(brexit_proportions, aes(x = proportion, y = opinion, fill = opinion)) +
+  geom_col() +
+  facet_wrap(~region, nrow = 1, labeller = label_wrap_gen(width = 12))
+#removing the fill legend for opinion (not needed since the y axis is labeled) to give more room.
+ggplot(brexit_proportions, aes(x = proportion, y = opinion, fill = opinion)) +
+  geom_col() +
+  facet_wrap(~region, nrow = 1, labeller = label_wrap_gen(width = 12)) +
+  guides(fill = FALSE)
+#Adding title, subtitle, and caption, and removing y axis label.
+ggplot(brexit_proportions, aes(x = proportion, y = opinion, fill = opinion)) +
+  geom_col() +
+  facet_wrap(~region, nrow = 1, labeller = label_wrap_gen(width = 12)) +
+  guides(fill = FALSE)+
+  labs(
+    title = "Was Britain right/wrong to vote to leave EU?",
+    subtitle = "YouGov Survey Results, 2-3 September 2019",
+    caption = "Source: bit.ly/2lCJZVg",
+    y = NULL
+  ) 
+#Changing fill colors and adding minimal theme.
+ggplot(brexit_proportions, aes(x = proportion, y = opinion, fill = opinion)) +
+  geom_col() +
+  facet_wrap(~region, nrow = 1, labeller = label_wrap_gen(width = 12)) +
+  guides(fill = FALSE)+
+  labs(
+    title = "Was Britain right/wrong to vote to leave EU?",
+    subtitle = "YouGov Survey Results, 2-3 September 2019",
+    caption = "Source: bit.ly/2lCJZVg",
+    y = NULL
+  ) +
+  scale_fill_manual(values = c(
+    "Wrong" = "#ef8a62",
+    "Right" = "#67a9cf",
+    "Don't know" = "gray"
+  )) +
+  theme_minimal()
 ```
+How is the story this visualisation telling different than the story the original plot tells?
 
+Compared to the original plot, this graph removes any information about the relative differences in sample size from each of the regions to focus exclusively on the proportions of the opinions within each region. Proportion could still be "eyeballed" from the first plot, but now we can see it more clearly. For example, the first plot shows that many more people in Scotland thought it was wrong to leave the EU than those who thought it was right or didn't know——but now we can see that it's close to 70% of Scotland that thought it was wrong, and we can see that it has the largest proportion of 'wrongs' compared to the other regions.
 ### Exercise 3 - Comparing proportions across bars
 
 Recreate the same visualisation from the previous exercise, this time dodging the bars for opinion proportions for each region, rather than faceting by region and then improve the legend.
 How is the story this visualisation telling different than the story the previous plot tells?
 
 ```{r}
-# code goes here
+# Thanks Claude
+ggplot(brexit_proportions, aes(x = region, y = proportion, fill = opinion)) +
+  geom_col(position = "dodge") +  # This creates the side-by-side bars
+  labs(
+    title = "Was Britain right/wrong to vote to leave EU?",
+    subtitle = "YouGov Survey Results, 2-3 September 2019",
+    caption = "Source: bit.ly/2lCJZVg",
+    x = NULL,
+    y = "Proportion"
+  ) +
+  scale_fill_manual(values = c(
+    "Wrong" = "#ef8a62",
+    "Right" = "#67a9cf",
+    "Don't know" = "gray"
+  ),
+  name = "Opinion") +  # Improves the legend title
+  scale_y_continuous(labels = scales::percent_format()) +  # Format y-axis as percentages
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Angle the x-axis labels for better readability
+    legend.position = "top"  # Move legend to top for better visibility
+  )
 ```
